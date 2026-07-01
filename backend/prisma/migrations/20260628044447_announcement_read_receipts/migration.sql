@@ -1,0 +1,21 @@
+-- CreateTable
+CREATE TABLE "announcement_reads" (
+    "id" TEXT NOT NULL,
+    "announcement_id" TEXT NOT NULL,
+    "student_id" TEXT NOT NULL,
+    "read_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "announcement_reads_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE INDEX "announcement_reads_student_id_idx" ON "announcement_reads"("student_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "announcement_reads_announcement_id_student_id_key" ON "announcement_reads"("announcement_id", "student_id");
+
+-- AddForeignKey
+ALTER TABLE "announcement_reads" ADD CONSTRAINT "announcement_reads_announcement_id_fkey" FOREIGN KEY ("announcement_id") REFERENCES "announcements"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "announcement_reads" ADD CONSTRAINT "announcement_reads_student_id_fkey" FOREIGN KEY ("student_id") REFERENCES "student_profiles"("id") ON DELETE CASCADE ON UPDATE CASCADE;

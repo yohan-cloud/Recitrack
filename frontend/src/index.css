@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+:root {
+  font-family: Inter, system-ui, sans-serif;
+  color: #0f172a;
+  background: #f8fafc;
+  --school-blue: #0f4cbd;
+  --school-blue-dark: #0b3a91;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.theme-dark body {
+  color: #e2e8f0;
+  background: #0f172a;
+}
+
+.theme-dark .bg-slate-50,
+.theme-dark .bg-slate-100 {
+  background-color: #0f172a !important;
+}
+
+.theme-dark .bg-white,
+.theme-dark .bg-white\/95 {
+  background-color: #111827 !important;
+}
+
+.theme-dark .bg-blue-50 {
+  background-color: rgb(30 64 175 / 0.22) !important;
+}
+
+.theme-dark .text-slate-950,
+.theme-dark .text-slate-900,
+.theme-dark .text-slate-800,
+.theme-dark .text-slate-700 {
+  color: #f8fafc !important;
+}
+
+.theme-dark .text-slate-600,
+.theme-dark .text-slate-500 {
+  color: #cbd5e1 !important;
+}
+
+.theme-dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+.theme-dark .border-slate-200,
+.theme-dark .ring-slate-200,
+.theme-dark .ring-slate-100,
+.theme-dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+.theme-dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #334155 !important;
+  --tw-ring-color: #334155 !important;
+}
+
+.theme-dark input,
+.theme-dark select {
+  color: #f8fafc;
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+.theme-dark input::placeholder {
+  color: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.random-picker-ring {
+  width: 8rem;
+  height: 8rem;
+  border-radius: 9999px;
+  background: conic-gradient(var(--school-blue) 0deg 145deg, #ffffff 145deg 178deg, #dbeafe 178deg 285deg, var(--school-blue) 285deg 360deg);
+  filter: drop-shadow(0 16px 24px rgb(37 99 235 / 18%));
+  opacity: 0.9;
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 12px), #000 calc(100% - 11px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 12px), #000 calc(100% - 11px));
+}
+
+.random-picker-ring.is-spinning {
+  animation: random-picker-spin 900ms linear infinite;
+}
+
+.random-picker-dot {
+  animation: random-picker-pulse 720ms ease-in-out infinite;
+}
+
+@keyframes random-picker-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes random-picker-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translate(12px, 18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
