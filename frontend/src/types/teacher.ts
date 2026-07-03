@@ -133,7 +133,7 @@ export type StudentCreatePayload = {
   studentNumber: string
   firstName: string
   lastName: string
-  email: string
+  email?: string
   sectionId: string
   classIds: string[]
 }

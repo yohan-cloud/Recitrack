@@ -39,6 +39,14 @@ app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: env.NODE_ENV === 'productio
 app.use(express.json())
 app.use(cookieParser())
 
+app.use('/api', (_req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  res.setHeader('Pragma', 'no-cache')
+  res.setHeader('Expires', '0')
+  res.setHeader('Surrogate-Control', 'no-store')
+  next()
+})
+
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' })
 })

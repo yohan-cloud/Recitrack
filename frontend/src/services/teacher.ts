@@ -139,6 +139,12 @@ export async function deleteStudent(accessToken: string, studentId: string) {
   })
 }
 
+export async function resetStudentPassword(accessToken: string, studentId: string, temporaryPassword: string) {
+  await api.post(`/students/${studentId}/reset-password`, { temporaryPassword }, {
+    headers: authHeaders(accessToken)
+  })
+}
+
 export async function getClassReport(accessToken: string, classId: string, params?: { startDate?: string; endDate?: string }) {
   const response = await api.get<ClassReport>(`/reports/class/${classId}`, {
     headers: authHeaders(accessToken),

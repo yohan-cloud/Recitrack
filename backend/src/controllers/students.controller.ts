@@ -163,6 +163,29 @@ export async function updateStudent(req: AuthenticatedRequest, res: Response) {
   return res.json(student)
 }
 
+export async function resetStudentPassword(req: AuthenticatedRequest, res: Response) {
+  const teacher = await getTeacherProfileOrThrow(req.auth!.userId)
+  const studentId = String(req.params.id)
+  const student = await getOwnedStudentOrThrow(studentId, teacher.id)
+  const temporaryPassword = typeof req.body.temporaryPassword === 'string' ? req.body.temporaryPassword.trim() : ''
+
+  if (temporaryPassword.length < 8) {
+    return res.status(400).json({ message: 'Temporary password must be at least 8 characters long' })
+  }
+
+  const passwordHash = await bcrypt.hash(temporaryPassword, 10)
+
+  await prisma.user.update({
+    where: { id: student.userId },
+    data: {
+      passwordHash,
+      isFirstLogin: true
+    }
+  })
+
+  return res.json({ message: 'Student password reset' })
+}
+
 export async function deleteStudent(req: AuthenticatedRequest, res: Response) {
   const teacher = await getTeacherProfileOrThrow(req.auth!.userId)
   const studentId = String(req.params.id)

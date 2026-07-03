@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { CheckCircle2, Copy, MoreVertical, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
+import { CheckCircle2, Copy, KeyRound, MoreVertical, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
 import { ConfirmDialog } from '../../components/common/confirm-dialog'
 import { StateMessage } from '../../components/common/state-message'
 import { useAuth } from '../../lib/use-auth'
-import { createStudent, deleteStudent, getClasses, getSections, getStudents, updateStudent } from '../../services/teacher'
+import { createStudent, deleteStudent, getClasses, getSections, getStudents, resetStudentPassword, updateStudent } from '../../services/teacher'
 import type { Section, StudentCreatePayload, TeacherClass, TeacherStudent } from '../../types/teacher'
 
 type FormState = StudentCreatePayload
@@ -32,8 +32,13 @@ export function StudentManagementPage() {
   const [formOpen, setFormOpen] = useState(false)
   const [openMenuStudentId, setOpenMenuStudentId] = useState('')
   const [temporaryPassword, setTemporaryPassword] = useState('')
+  const [passwordResetTarget, setPasswordResetTarget] = useState<TeacherStudent | null>(null)
+  const [passwordResetValue, setPasswordResetValue] = useState('')
+  const [passwordResetConfirmValue, setPasswordResetConfirmValue] = useState('')
+  const [passwordResetMessage, setPasswordResetMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [resettingStudentId, setResettingStudentId] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<TeacherStudent | null>(null)
   const [error, setError] = useState('')
@@ -201,6 +206,39 @@ export function StudentManagementPage() {
     setOpenMenuStudentId('')
   }
 
+  const openPasswordResetDialog = (student: TeacherStudent) => {
+    setOpenMenuStudentId('')
+    setPasswordResetMessage('')
+    setPasswordResetTarget(student)
+    setPasswordResetValue('')
+    setPasswordResetConfirmValue('')
+  }
+
+  const handleResetPassword = async () => {
+    if (!accessToken || !passwordResetTarget) {
+      return
+    }
+
+    try {
+      setResettingStudentId(passwordResetTarget.id)
+      setError('')
+      await resetStudentPassword(accessToken, passwordResetTarget.id, passwordResetValue)
+      setStudents((current) =>
+        current.map((entry) =>
+          entry.id === passwordResetTarget.id ? { ...entry, user: { ...entry.user, isFirstLogin: true } } : entry
+        )
+      )
+      setPasswordResetMessage(`${passwordResetTarget.firstName} ${passwordResetTarget.lastName}'s temporary password was updated.`)
+      setPasswordResetTarget(null)
+      setPasswordResetValue('')
+      setPasswordResetConfirmValue('')
+    } catch {
+      setError('Unable to reset student password.')
+    } finally {
+      setResettingStudentId('')
+    }
+  }
+
   return (
     <div className="space-y-5 sm:space-y-6">
       <section className="space-y-4">
@@ -231,6 +269,7 @@ export function StudentManagementPage() {
         </div>
 
         {error ? <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
+        {passwordResetMessage ? <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{passwordResetMessage}</div> : null}
 
         <div className="overflow-visible rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
           <div className="flex items-center justify-between border-b border-slate-200 px-3 py-3 sm:px-4 sm:py-4">
@@ -268,6 +307,10 @@ export function StudentManagementPage() {
                     <button className="flex w-full items-center gap-3 px-3 py-2.5 text-left font-medium text-slate-700 hover:bg-slate-50" onClick={() => void copyStudentUsername(student)}>
                       <Copy size={16} className="text-slate-500" />
                       Copy username
+                    </button>
+                    <button className="flex w-full items-center gap-3 px-3 py-2.5 text-left font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" disabled={resettingStudentId === student.id} onClick={() => openPasswordResetDialog(student)}>
+                      <KeyRound size={16} className="text-slate-500" />
+                      Reset password
                     </button>
                     <div className="my-1.5 border-t border-slate-100" />
                     <button className="flex w-full items-center gap-3 px-3 py-2.5 text-left font-medium text-rose-700 hover:bg-rose-50" onClick={() => openDeleteDialog(student)}>
@@ -320,6 +363,10 @@ export function StudentManagementPage() {
                         <button className="flex w-full items-center gap-3 px-3 py-2.5 text-left font-medium text-slate-700 hover:bg-slate-50" onClick={() => void copyStudentUsername(student)}>
                           <Copy size={16} className="text-slate-500" />
                           Copy username
+                        </button>
+                        <button className="flex w-full items-center gap-3 px-3 py-2.5 text-left font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" disabled={resettingStudentId === student.id} onClick={() => openPasswordResetDialog(student)}>
+                          <KeyRound size={16} className="text-slate-500" />
+                          Reset password
                         </button>
                         <div className="my-1.5 border-t border-slate-100" />
                         <button className="flex w-full items-center gap-3 px-3 py-2.5 text-left font-medium text-rose-700 hover:bg-rose-50" onClick={() => openDeleteDialog(student)}>
@@ -380,8 +427,8 @@ export function StudentManagementPage() {
               <input className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none sm:rounded-2xl sm:px-4 sm:py-3" value={form.studentNumber} onChange={(event) => updateField('studentNumber', event.target.value)} required />
             </label>
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-700">Email</span>
-              <input className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none sm:rounded-2xl sm:px-4 sm:py-3" type="email" value={form.email} onChange={(event) => updateField('email', event.target.value)} required />
+              <span className="mb-2 block text-sm font-medium text-slate-700">Email <span className="font-normal text-slate-400">(optional)</span></span>
+              <input className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none sm:rounded-2xl sm:px-4 sm:py-3" type="email" value={form.email} onChange={(event) => updateField('email', event.target.value)} />
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="block">
@@ -431,6 +478,65 @@ export function StudentManagementPage() {
         onCancel={() => setDeleteTarget(null)}
         onConfirm={() => void handleDelete()}
       />
+      {passwordResetTarget ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 p-4 backdrop-blur-sm">
+          <form className="w-full max-w-md rounded-3xl bg-white p-5 shadow-2xl ring-1 ring-slate-200 sm:p-6" onSubmit={(event) => {
+            event.preventDefault()
+            void handleResetPassword()
+          }}>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="mb-3 inline-flex rounded-2xl bg-blue-50 p-3 text-[var(--school-blue)]">
+                  <KeyRound size={20} />
+                </div>
+                <h3 className="text-lg font-semibold text-slate-950">Set Temporary Password</h3>
+                <p className="mt-1 text-sm leading-6 text-slate-500">
+                  This will become {passwordResetTarget.firstName} {passwordResetTarget.lastName}&apos;s temporary password. They will be asked to change it on first login.
+                </p>
+              </div>
+              <button className="rounded-xl border border-slate-200 p-2 text-slate-500" type="button" onClick={() => setPasswordResetTarget(null)} title="Close password reset form">
+                <X size={16} />
+              </button>
+            </div>
+            <label className="mt-5 block">
+              <span className="mb-2 block text-sm font-medium text-slate-700">Temporary Password</span>
+              <input
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-300 focus:bg-white"
+                minLength={8}
+                type="text"
+                value={passwordResetValue}
+                onChange={(event) => setPasswordResetValue(event.target.value)}
+                placeholder="At least 8 characters"
+                required
+              />
+            </label>
+            <label className="mt-3 block">
+              <span className="mb-2 block text-sm font-medium text-slate-700">Confirm Temporary Password</span>
+              <input
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-300 focus:bg-white"
+                minLength={8}
+                type="text"
+                value={passwordResetConfirmValue}
+                onChange={(event) => setPasswordResetConfirmValue(event.target.value)}
+                placeholder="Type it again"
+                required
+              />
+            </label>
+            {passwordResetConfirmValue && passwordResetValue !== passwordResetConfirmValue ? (
+              <p className="mt-2 text-xs font-medium text-rose-600">Passwords do not match.</p>
+            ) : null}
+            <p className="mt-2 text-xs text-slate-500">Use something easy to hand to the student, then they must replace it after login.</p>
+            <div className="mt-5 grid grid-cols-2 gap-2">
+              <button className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700" type="button" onClick={() => setPasswordResetTarget(null)}>
+                Cancel
+              </button>
+              <button className="rounded-2xl bg-[var(--school-blue)] px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60" type="submit" disabled={resettingStudentId === passwordResetTarget.id || passwordResetValue.trim().length < 8 || passwordResetValue !== passwordResetConfirmValue}>
+                {resettingStudentId === passwordResetTarget.id ? 'Saving...' : 'Save Password'}
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : null}
     </div>
   )
 }
