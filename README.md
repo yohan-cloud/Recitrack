@@ -55,31 +55,6 @@ frontend/
     types/
 ```
 
-## Demo Accounts
-
-Teacher:
-
-```text
-username: teacher.demo
-password: teacher123
-```
-
-Seeded students all start with:
-
-```text
-password: student123
-```
-
-Student usernames:
-
-```text
-student.demo
-maria.lopez
-john.cruz
-mica.santos
-bea.garcia
-nathan.reyes
-```
 
 Student accounts are marked as first-login, so they will be redirected to Settings to change password first.
 
