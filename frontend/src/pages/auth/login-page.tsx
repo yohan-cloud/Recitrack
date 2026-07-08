@@ -84,8 +84,7 @@ export function LoginPage() {
       <div className="grid w-full max-w-6xl overflow-hidden rounded-[32px] bg-white shadow-xl ring-1 ring-slate-200 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="bg-[var(--school-blue)] px-10 py-12 text-white">
           <div className="max-w-md">
-            <p className="text-sm uppercase tracking-[0.25em] text-blue-100">ReciTrack v1.0</p>
-            <h1 className="mt-6 text-4xl font-semibold leading-tight">Role-based recitation tracking for modern classrooms.</h1>
+            <h1 className="text-4xl font-semibold leading-tight">ReciTrack | Recitation Tracking</h1>
             <p className="mt-4 text-base text-blue-100">Teachers manage sections, classes, and recitation data. Students view their own records only.</p>
           </div>
         </div>
